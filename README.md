@@ -4,8 +4,11 @@
 
 ### Trees
 
-- Binary Search Tree
-- AVL Tree
-- RB Tree
-- 2-3 Tree
-- B Tree
+* Binary Search Tree
+	* (C code)[https://github.com/abhishek363036/coding-interview-preparation/blob/master/Trees/Binary%20Search%20Tree/BINARY_SEARCH_TREE.c]
+* AVL Tree
+	* (C code)[https://github.com/abhishek363036/coding-interview-preparation/blob/master/Trees/AVL%20Tree/AVL_TREE.c]
+* Red Black Tree
+	* (C code)[https://github.com/abhishek363036/coding-interview-preparation/blob/master/Trees/Red%20Black%20Tree/RED_BLACK_TREE.c]
+* 2-3 Tree
+	* (C code)[https://github.com/abhishek363036/coding-interview-preparation/blob/master/Trees/2-3%20Tree/2-3_TREE.c]
