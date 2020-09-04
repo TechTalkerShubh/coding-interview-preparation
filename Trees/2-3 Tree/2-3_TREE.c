@@ -1,8 +1,9 @@
 /**
+  * ADSA Lab Assignment 3.1
   * Implementation and Basic Operations (Insert, Delete, Search, Display) on 2-3 tree.
   * 2-3 Tree is simply a B-Tree of Order 'p' = 3
   * If p is the order, then every node will have p-1 keys and p children.
-  * 
+  *
   **/
 
 #include<stdio.h>
@@ -34,13 +35,167 @@ node *create_new_node(int key) {
 	return mem;
 }
 
+/** fixes the overflow for the node */
+void insert_fixup(node *y, int key) {
+
+	while(y && y->keys_count > 2) {	/* until we have a parent which does not overflow */
+
+		printf("Overflow at [%d, %d, %d] occurred.\n", y->keys[0], y->keys[1], y->keys[2]);
+
+		/* get median */
+		int median = y->keys[1];
+
+		/* split this node */
+		node *w = create_new_node(y->keys[2]);
+		w->p2 = y->p4;
+		w->p1 = y->p3;
+
+		/* fix child links for the split node */
+		if(w->p2)
+			w->p2->parent = w;
+		if(w->p1)
+			w->p1->parent = w;
+
+		/* reset */
+		y->keys[1] = y->keys[2] = INT_MIN;
+		y->p3 = y->p4 = NULL;
+		y->keys_count = 1;
+
+		/* get parent for this node */
+		node *p = y->parent;
+
+		/* pull the median up to the parent */
+		if(!p) {
+
+			/* create new root node */
+			root = p = create_new_node(median);
+
+			/* set parent for both the splits */
+			y->parent = w->parent = p;
+
+			/* fix child links for the parent */
+			p->p2 = w;
+			p->p1 = y;
+
+			break;
+
+		} else {
+
+			if(y == p->p1) {		/* this is the left child */
+
+				/* sort keys of the parent */
+				p->keys[2] = p->keys[1];
+				p->keys[1] = p->keys[0];
+				p->keys[0] = median;
+
+				/* increment key count */
+				p->keys_count++;
+
+				/* set parent for the new split */
+				w->parent = p;
+
+				/* fix child links for the parent */
+				p->p4 = p->p3;
+				p->p3 = p->p2;
+				p->p2 = w;
+
+				/* move to parent */
+				y = p;
+			}
+			else if(y == p->p2) {	/* this is the middle child */
+
+				/* sort keys of the parent */
+				p->keys[2] = p->keys[1];
+				p->keys[1] = median;
+
+				/* increment key count */
+				p->keys_count++;
+
+				/* set parent for the new split */
+				w->parent = p;
+
+				/* fix child links for the parent */
+				p->p4 = p->p3;
+				p->p3 = w;
+
+				/* move to parent */
+				y = p;
+			}
+			else {					/* this is the right child */
+
+				p->keys[2] = median;
+
+				/* increment key count */
+				p->keys_count++;
+
+				/* set parent for the new split */
+				w->parent = p;
+
+				/* fix child link for the new split */
+				p->p4 = w;
+
+				/* move to parent */
+				y = p;
+			}
+		}
+	}
+}
+
+/** Inserts the given key into the 2-3 tree */
 void insert(int key) {
 
+	node *y = NULL;
+	node *x = root;
+
+	/* search where to put the key */
+	while(x) {
+		y = x;				/* hold the parent node */
+		if(key < x->keys[0])
+			x = x->p1;
+		else if(x->keys_count == 1)
+			x = x->p2;
+		else
+			x = x->p3;
+	}
+
+	if(!y)
+		root = create_new_node(key);
+
+	else if(y->keys_count == 1) {
+		if(key < y->keys[0]) {
+			y->keys[1] = y->keys[0];
+			y->keys[0] = key;
+		} else {
+			y->keys[1] = key;
+		}
+		y->keys_count++;
+	}
+	else {
+		/** overflow condition */
+
+		if(key < y->keys[0]) {
+			/* sort the keys */
+			y->keys[2] = y->keys[1];
+			y->keys[1] = y->keys[0];	/* median */
+			y->keys[0] = key;
+
+		} else if(key > y->keys[0] && key < y->keys[1]) {
+			/* sort the keys */
+			y->keys[2] = y->keys[1];
+			y->keys[1] = key;			/* median */
+
+		} else
+			y->keys[2] = key;
+
+		y->keys_count++;
+
+		insert_fixup(y, key);
+	}
 }
 
 void delete(int key) {
-	
-	
+
+
 }
 
 node *tree_minimum(node *root) {
