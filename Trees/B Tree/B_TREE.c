@@ -206,20 +206,15 @@ void delete_fixup(node *y) {
 /** searches the key in the B Tree and
  *  returns the node containing that key */
 node *search(node *root, int key) {
-
-	if(!root)
+	if(!root)	/* not found */
 		return NULL;
-
-	/* search and recur if not found */
-	for(int i=0; i < root->keys_count; i++) {
+	for(int i=0; i < root->keys_count; i++) {	/* search and recur if no match */
+		if(key == root->keys[i])
+			return root;	/* found */
 		if(key < root->keys[i])
 			return search(root->p[i], key);
-		if(key > root->keys[i] && key < root->keys[i+1])
-			return search(root->p[i + 1], key);
-	} if(key > root->keys[root->keys_count - 1])
-		return search(root->p[root->keys_count], key);
-
-	return root;	/* found */
+	}
+	return search(root->p[root->keys_count], key);
 }
 
 node *tree_minimum(node *root) {
