@@ -1,12 +1,6 @@
 /**
   * Implementation and Basic Operations (Insert, Delete, Search, Display) on 2-3 tree.
-  * 2-3 Tree is simply a B-Tree of Order T == 2
-  * If T is the order, then every node must have:
-  * 	at least T-1 keys, and
-  * 	at least T children (except Root node)
-  * In general,
-  * T   <= # of child < 2 * T
-  * T-1 <= # of keys  < 2 * T - 1
+  * 2-3 Tree is simply the lowest order B-Tree ( T = 2 )
   *
   **/
 
@@ -14,7 +8,7 @@
 #include<stdlib.h>
 #include<limits.h>
 
-#define T 2
+#define T 2	/* minimum order for BTree */
 
 /* 2-3 tree node */
 struct node {
@@ -201,6 +195,11 @@ int is_empty(node *y) {
 	return y->keys_count == 0;
 }
 
+/** checks if the given node is a root node */
+int is_root(node *x) {
+	return root == x;
+}
+
 /** fixes the underflow for the node */
 void delete_fixup(node *y) {
 
@@ -214,229 +213,136 @@ void delete_fixup(node *y) {
 		node *x = NULL;		/* left sibling */
 		node *z = NULL;		/* right sibling */
 
-		if(y == p->p1) {	/* this is a left child */
-
-			/* get the right sibling */
+		if(y == p->p1) {		/* this is the first child */
 			z = p->p2;
+		} else if(y == p->p2) {	/* this is the second child */
+			x = p->p1;
+			z = p->p3;
+		} else {				/* this is the third child */
+			x = p->p2;
+		}
 
-			if (has_enough_keys(z)) {	/* z has enough ( > T-1 ) keys to donate */
+		if (has_enough_keys(z)) {	/* z exists, and has enough ( > T-1 ) keys to donate */
 
-				/* exchange the keys between y, p and z */
-				y->keys[0] = p->keys[0];
-				p->keys[0] = z->keys[0];	/* left key in z */
+			/* exchange the keys between y, p and z */
+			y->keys[0] = p->keys[p->keys_count - 1];
+			p->keys[p->keys_count - 1] = z->keys[0];	/* left key in z */
 
-				/* fix links for y */
-				y->p2 = z->p1;
-				if(y->p2)
-					y->p2->parent = y;
+			/* update y */
+			y->p2 = z->p1;
+			if(y->p2)
+				y->p2->parent = y;
+			y->keys_count++;
 
-				/* update / reset z */
-				z->keys[0] = z->keys[1];
-				z->keys[1] = INT_MAX;
-				z->keys_count--;
+			/* update z */
+			z->keys[0] = z->keys[1];
+			z->keys[1] = INT_MAX;
+			z->p1 = z->p2;
+			z->p2 = z->p3;
+			z->p3 = NULL;
+			z->keys_count--;
 
-				/* fix links for z */
-				z->p1 = z->p2;
-				z->p2 = z->p3;
-				z->p3 = NULL;
+		} else if(has_enough_keys(x)) {	/* x exists, and has enough ( > T-1 ) keys to donate */
 
-			} else {
+			/* exchange keys between p, x and y */
+			y->keys[0] = p->keys[p->keys_count - 1];
+			p->keys[p->keys_count - 1] = x->keys[1];	/* last key in x */
 
-				/**
-				 * 	MERGE Operation
-				 *  pull the parent key down
-				 *  move z to y */
+			/* fix links for y */
+			y->p1 = x->p3;
+			if(y->p1)
+				y->p1->parent = y;
+			y->keys_count++;
 
-				printf("Merge Case I.\n");
+			/* update / reset x */
+			x->keys[1] = INT_MAX;
+			x->p3 = NULL;
+			x->keys_count--;
 
-				/** in this case, parent node may not have enough ( > T-1 ) keys
-				 *  hence, pulling a key down to its children may leave the parent node empty. */
+		} else {
 
-				/* y merged with p and z */
-				y->keys[0] = p->keys[0];	/* parent key pulled down */
-				y->keys[1] = z->keys[0];	/* only key of z */
-				y->keys_count += 2;
+			/******************
+			 * MERGE OPERATION
+			 ******************/
 
-				/* update parent */
-				p->keys[0] = p->keys[1];
-				p->keys[1] = INT_MAX;
-				p->keys_count--;
+			printf("Merge initiated!\n");
 
-				/* fix links */
-				p->p2 = p->p3;
-				p->p3 = NULL;
+			if(z) {
+
+				/* pull parent key down */
+				if(y == p->p1)
+					y->keys[0] = p->keys[0];
+				else
+					y->keys[0] = p->keys[1];
+				y->keys[1] = z->keys[0];	/* move z to y */
+
+				/* update y */
 				y->p2 = z->p1;
 				y->p3 = z->p2;
 				if(y->p2)
 					y->p2->parent = y;
 				if(y->p3)
 					y->p3->parent = y;
+				y->keys_count += 2;
+
+				/* update p */
+				if(y == p->p1) {
+					p->p2 = p->p3;
+					p->keys[0] = p->keys[1];
+				}
+				p->p3 = NULL;
+				p->keys[1] = INT_MAX;
+				p->keys_count--;
+
+				/* check if root node has become empty */
+				if(is_empty(p) && is_root(p)) {
+					free(p);
+					y->parent = p = NULL;
+					root = y;
+				}
 
 				/* clean */
 				free(z);
 
-				/* if root node has become empty
-				 * y will be the new root */
-				if(is_empty(root)) {
-					root = y;
-					y->parent = NULL;
-					free(p);
-					p = NULL;
-				}
-			}
-		} else if(y == p->p2) {	/* this is a middle child */
-
-			/* get both the siblings */
-			z = p->p3;
-			x = p->p1;
-
-			if(has_enough_keys(z)) {	/* z exists, and has enough keys to donate */
-
-				/* exchange the keys between y, p and z */
-				y->keys[0] = p->keys[1];
-				p->keys[1] = z->keys[0];	/* first key in z */
-
-				/* fix links for y */
-				y->p2 = z->p1;
-				if(y->p2)
-					y->p2->parent = y;
-
-				/* update / reset z */
-				z->keys[0] = z->keys[1];
-				z->keys[1] = INT_MAX;
-				z->keys_count--;
-
-				/* fix links for z */
-				z->p1 = z->p2;
-				z->p2 = z->p3;
-				z->p3 = NULL;
-
-			} else if(has_enough_keys(x)) {	/* x has enough keys to donate */
-
-				/* exchange keys between p, x and y */
-				y->keys[0] = p->keys[0];
-				p->keys[0] = x->keys[1];	/* last key in x */
-
-				/* fix links for y */
-				y->p1 = x->p3;
-				if(y->p1)
-					y->p1->parent = y;
-
-				/* update / reset x */
-				x->keys[1] = INT_MAX;
-				x->p3 = NULL;
-				x->keys_count--;
-
 			} else {
 
-				/** MERGE operation
-				 *  pull the parent key down
-				 *  merge with either of the sibling */
+				/* move parent key to 'x' */
+				if(x == p->p1)
+					x->keys[1] = p->keys[0];
+				else
+					x->keys[1] = p->keys[1];
 
-				if(z) {	/* if exists, move 'z' to 'y' */
-
-					printf("Merge Case II.\n");
-
-					/** In this case parent node is guaranteed to have > T-1 keys
-					 * hence after a key is pulled down, the parent node does not become empty */
-
-					y->keys[0] = p->keys[1];	/* pull parent key down */
-					y->keys[1] = z->keys[0];	/* move z to y */
-					y->keys_count += 2;		/* add newly added # of keys to  the y's key count */
-
-					/* fix links for y */
-					y->p1 = y->p2;
-					y->p2 = z->p1;
-					y->p3 = z->p2;
-					if(y->p2)
-						y->p2->parent = y;
-					if(y->p3)
-						y->p3->parent = y;
-
-					/* update / reset parent */
-					p->keys[1] = INT_MAX;
-					p->p3 = NULL;
-					p->keys_count--;
-
-					/* clean */
-					free(z);
-
-				} else {	/* move 'y' to 'x' */
-
-					printf("Merge Case III.\n");
-
-					x->keys[1] = p->keys[0];	/* move parent node down */
-					x->keys_count++;
-
-					/* update parent */
-					p->keys[0] = INT_MAX;
-					p->p2 = NULL;
-					p->keys_count--;
-
-					/* fix links */
-					x->p3 = y->p1;
-					if(x->p3)
-						x->p3->parent = x;
-
-					/* clean */
-					free(y);
-
-					/* if root node has become empty
-					 * x will be the new root */
-					if(is_empty(root)) {
-						root = x;
-						x->parent = NULL;
-						free(p);
-						p = NULL;
-					}
-				}
-			}
-		} else {	/* this is a right child */
-
-			/* get left sibling */
-			x = p->p2;
-
-			if(has_enough_keys(x)) {	/* x has enough keys to donate */
-
-				/* exchange keys between p, x and y */
-				y->keys[0] = p->keys[1];
-				p->keys[1] = x->keys[1];	/* last key in x */
-
-				/* fix links in y */
-				y->p1 = x->p3;
-				if(y->p1)
-					y->p1->parent = y;
-
-				/* update / reset x */
-				x->keys[1] = INT_MAX;
-				x->p3 = NULL;
-				x->keys_count--;
-
-			} else {
-
-				printf("Merge Case IV.\n");
-
-				/** In this case parent node is guaranteed to have > T-1 keys
-				 * hence after a key is pulled down, the parent node does not become empty */
-
-				x->keys[1] = p->keys[1];	/* move parent key to 'x' */
-				x->keys_count++;
-				p->keys_count--;
-
-				/* fix links */
-				p->p3 = NULL;
-				p->keys[1] = INT_MAX;
+				/* update x */
 				x->p3 = y->p1;
 				if(x->p3)
 					x->p3->parent = x;
+				x->keys_count++;
+
+				/* update p */
+				if(x == p->p1) {
+					p->p2 = p->p3;
+					p->keys[0] = p->keys[1];
+				}
+				p->p3 = NULL;
+				p->keys[1] = INT_MAX;
+				p->keys_count--;
+
+				/* check if root node has become empty */
+				if(is_empty(p) && is_root(p)) {
+					free(p);
+					x->parent = p = NULL;
+					root = x;
+				}
 
 				/* clean */
 				free(y);
 			}
+			printf("Merge successful!\n");
 		}
 		/* move to the parent */
 		y = p;
 	}
+	printf("Underflow resolved!\n");
 }
 
 /** searches the key in the 2-3 Tree and
@@ -472,11 +378,6 @@ int is_leaf(node *x) {
 	return x->p1 == NULL && x->p2 == NULL;
 }
 
-/** checks if the given node is a root node */
-int is_root(node *x) {
-	return root == x;
-}
-
 void delete(int key) {
 
 	/* first search the node which has this key */
@@ -499,7 +400,6 @@ void delete(int key) {
 			if(is_root(x)) {
 				free(root);
 				root = NULL;
-
 			} else
 				delete_fixup(x);
 		}
@@ -526,13 +426,6 @@ void delete(int key) {
 
 		if(is_underflow(y))	/* violates BTree property */
 			delete_fixup(y);
-
-		else {
-			/* update / reset links */
-			y->p1 = y->p2;
-			y->p2 = y->p3;
-			y->p3 = NULL;
-		}
 	}
 }
 
@@ -570,7 +463,7 @@ void postorder(node *root) {
 }
 
 int main() {
-
+	
 	while(1) {
 
 		printf("+-------------------------+\n"
