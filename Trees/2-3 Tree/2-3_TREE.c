@@ -225,9 +225,16 @@ void delete_fixup(node *y) {
 
 		if (has_enough_keys(z)) { /* z exists, and has enough ( > T-1 ) keys to donate */
 
+			printf("Keys right rotated via Parent\n");
+
 			/* exchange the keys between y, p and z */
-			y->keys[0] = p->keys[p->keys_count - 1];
-			p->keys[p->keys_count - 1] = z->keys[0]; /* left key in z */
+			if(y == p->p1) {
+				y->keys[0] = p->keys[0];
+				p->keys[0] = z->keys[0]; /* first key in z */
+			} else {
+				y->keys[0] = p->keys[1];
+				p->keys[1] = z->keys[0]; /* first key in z */
+			}
 
 			/* update y */
 			y->p2 = z->p1;
@@ -245,9 +252,16 @@ void delete_fixup(node *y) {
 
 		} else if (has_enough_keys(x)) { /* x exists, and has enough ( > T-1 ) keys to donate */
 
+			printf("Keys right rotated via Parent\n");
+
 			/* exchange keys between p, x and y */
-			y->keys[0] = p->keys[p->keys_count - 1];
-			p->keys[p->keys_count - 1] = x->keys[1]; /* last key in x */
+			if(x == p->p1) {
+				y->keys[0] = p->keys[0];
+				p->keys[0] = x->keys[1]; /* last key in x */
+			} else {
+				y->keys[0] = p->keys[1];
+				p->keys[1] = x->keys[1]; /* last key in x */
+			}
 
 			/* fix links for y */
 			y->p1 = x->p3;
@@ -262,9 +276,9 @@ void delete_fixup(node *y) {
 
 		} else {
 
-			/******************
-			 * MERGE OPERATION
-			 ******************/
+			/*******************
+			 * MERGE OPERATION *
+			 *******************/
 
 			printf("Merge initiated!\n");
 
@@ -275,7 +289,9 @@ void delete_fixup(node *y) {
 					y->keys[0] = p->keys[0];
 				else
 					y->keys[0] = p->keys[1];
-				y->keys[1] = z->keys[0]; /* move z to y */
+
+				/* move z to y */
+				y->keys[1] = z->keys[0];
 
 				/* update y */
 				y->p2 = z->p1;
