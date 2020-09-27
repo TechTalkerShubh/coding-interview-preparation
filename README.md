@@ -5,6 +5,7 @@
 ### Stacks
 * [Stack using Array](https://github.com/abhishek363036/coding-interview-preparation/blob/master/Stack/STACK_USING_ARRAY.C)
 * [Stack using Linked List](https://github.com/abhishek363036/coding-interview-preparation/blob/master/Stack/STACK_USING_LINKED_LIST.C)
+* [Balanced Parentheses Problem](https://github.com/abhishek363036/coding-interview-preparation/blob/master/Stack/BALANCED_PARENTHESES.C)
 
 ### Trees
 
