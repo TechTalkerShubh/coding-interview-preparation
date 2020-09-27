@@ -19,7 +19,7 @@
 struct node {
 	int data;
 	struct node *next;
-}*TOP = NULL;
+} *TOP = NULL;
 
 typedef struct node node;
 
@@ -39,7 +39,7 @@ void display() {
 	 */
 	printf("+------------+\n");
 	printf("TOP -> ");
-	for(node *temp = TOP; temp; temp = temp->next)
+	for (node *temp = TOP; temp; temp = temp->next)
 		printf("\t%d\n", temp->data);
 	printf("+------------+\n");
 }
@@ -52,7 +52,7 @@ int search(int item) {
 	/*
 	 * Applying a linear search O(n)
 	 */
-	for(node *temp = TOP; temp; temp = temp->next) {
+	for (node *temp = TOP; temp; temp = temp->next) {
 		if (temp->data == item)
 			return 1;
 	}
@@ -80,9 +80,9 @@ int pop() {
 /*
  * Creates a new node with the given item
  */
-node *create_new_node(int item) {
+node* create_new_node(int item) {
 	node *mem = NULL;
-	mem = (node *)malloc(sizeof(node));
+	mem = (node*) malloc(sizeof(node));
 	mem->data = item;
 	mem->next = NULL;
 	return mem;
@@ -96,9 +96,9 @@ int push(int item) {
 
 	node *PTR = create_new_node(item);
 
-	if(!PTR)
+	if (!PTR)
 		return 0;
-	if(!TOP)
+	if (!TOP)
 		TOP = PTR;
 	else {
 		PTR->next = TOP;
@@ -127,7 +127,7 @@ int main() {
 			printf("Enter the item: ");
 			int item;
 			scanf("%d", &item);
-			if(push(item))
+			if (push(item))
 				printf("%d successfully inserted\n", item);
 			else
 				printf("MEMORY FAILURE!\n");
@@ -176,3 +176,4 @@ int main() {
 	}
 	return 0;
 }
+
