@@ -2,6 +2,9 @@
 
 ## Data Structures
 
+### Stacks
+* [Stack using Array](https://github.com/abhishek363036/coding-interview-preparation/blob/master/Stack/STACK_USING_ARRAY.C)
+
 ### Trees
 
 * [Binary Search Tree](https://github.com/abhishek363036/coding-interview-preparation/blob/master/Trees/Binary%20Search%20Tree/BINARY_SEARCH_TREE.c)
