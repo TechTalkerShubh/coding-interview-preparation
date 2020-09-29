@@ -23,6 +23,8 @@ struct node {
 
 typedef struct node node;
 
+int N = 0;	/* records the count of items in the stack */
+
 /*
  * Checks if the STACK is empty
  */
@@ -74,6 +76,7 @@ int pop() {
 	node *temp = TOP;
 	TOP = TOP->next;
 	free(temp);
+	N--;
 	return top;
 }
 
@@ -104,6 +107,7 @@ int push(int item) {
 		PTR->next = TOP;
 		TOP = PTR;
 	}
+	N++;
 	return 1;
 }
 
