@@ -7,8 +7,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-#define MAX 100
-
 /*
  * Linked List Node
  */
@@ -18,6 +16,8 @@ struct node {
 } *TOP = NULL;
 
 typedef struct node node;
+
+int N = 0;	/* records the count of items in the stack */
 
 /*
  * Checks if the STACK is empty
@@ -41,6 +41,7 @@ char pop() {
 	node *temp = TOP;
 	TOP = TOP->next;
 	free(temp);
+	N--;
 	return top;
 }
 
@@ -71,6 +72,7 @@ int push(int item) {
 		PTR->next = TOP;
 		TOP = PTR;
 	}
+	N++;
 	return 1;
 }
 
@@ -82,19 +84,19 @@ int main() {
 	scanf("%d", &decimal);
 
 	while(decimal > 0) {
-		push(decimal%2);
-		decimal /= 2;
+		push(decimal & 1);	/* Bitwise AND */
+		decimal >>= 1;	/* Right Shift */
 	}
 
-	char binary[MAX] = { 0 };
+	char binary[N+1];
 	int i = 0;
 
 	while(!is_empty()) {
 		binary[i++] = pop() + '0';
 	}
+	binary[i] = '\0';
 
 	printf("Binary Equivalent: %s\n", binary);
 
 	return 0;
 }
-
